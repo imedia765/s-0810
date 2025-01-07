@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Brain, Database, Search, Tool } from 'lucide-react';
+import { Brain, Database, Search } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 const AIResearcher = () => {
@@ -26,7 +26,7 @@ const AIResearcher = () => {
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Tool className="h-5 w-5 text-primary" />
+            <Search className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">Active Tools</h2>
           </div>
           <ScrollArea className="h-[300px]">
