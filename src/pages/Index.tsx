@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Folder, File } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import BuildInfoCard from '@/components/BuildInfoCard';
+import { MainNav } from '@/components/MainNav';
 
 const Index = () => {
   const [code, setCode] = useState('// Your generated code will appear here');
@@ -59,54 +60,57 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen flex">
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AppSidebar />
-          <ResizablePanelGroup direction="horizontal" className="flex-1">
-            <ResizablePanel defaultSize={70} minSize={30}>
-              <main className="p-6">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-6">
-                  AI Code Generator
-                </h1>
-                <ResizablePanelGroup direction="vertical">
-                  <ResizablePanel defaultSize={50}>
-                    <div className="space-y-2">
-                      <h2 className="text-xl font-semibold">Generated Code</h2>
-                      <CodeEditor code={code} onChange={setCode} />
+    <div className="h-screen flex flex-col">
+      <MainNav />
+      <div className="flex-1">
+        <SidebarProvider>
+          <div className="flex min-h-[calc(100vh-64px)] w-full">
+            <AppSidebar />
+            <ResizablePanelGroup direction="horizontal" className="flex-1">
+              <ResizablePanel defaultSize={70} minSize={30}>
+                <main className="p-6">
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-6">
+                    AI Code Generator
+                  </h1>
+                  <ResizablePanelGroup direction="vertical">
+                    <ResizablePanel defaultSize={50}>
+                      <div className="space-y-2">
+                        <h2 className="text-xl font-semibold">Generated Code</h2>
+                        <CodeEditor code={code} onChange={setCode} />
+                      </div>
+                    </ResizablePanel>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={50}>
+                      <div className="space-y-2">
+                        <h2 className="text-xl font-semibold">Preview</h2>
+                        <Preview content={code} />
+                      </div>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
+                </main>
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={30} minSize={20}>
+                <div className="h-full flex flex-col">
+                  <div className="flex-1 border rounded-lg border-border mb-4">
+                    <div className="p-4 border-b border-border">
+                      <h2 className="text-sm font-semibold">Project Files</h2>
                     </div>
-                  </ResizablePanel>
-                  <ResizableHandle withHandle />
-                  <ResizablePanel defaultSize={50}>
-                    <div className="space-y-2">
-                      <h2 className="text-xl font-semibold">Preview</h2>
-                      <Preview content={code} />
-                    </div>
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </main>
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={30} minSize={20}>
-              <div className="h-full flex flex-col">
-                <div className="flex-1 border rounded-lg border-border mb-4">
-                  <div className="p-4 border-b border-border">
-                    <h2 className="text-sm font-semibold">Project Files</h2>
+                    <ScrollArea className="h-[calc(50vh-100px)]">
+                      <div className="p-2">
+                        {renderFileTree(fileTree)}
+                      </div>
+                    </ScrollArea>
                   </div>
-                  <ScrollArea className="h-[calc(50vh-100px)]">
-                    <div className="p-2">
-                      {renderFileTree(fileTree)}
-                    </div>
-                  </ScrollArea>
+                  <div className="flex-1 border rounded-lg border-border">
+                    <BuildInfoCard />
+                  </div>
                 </div>
-                <div className="flex-1 border rounded-lg border-border">
-                  <BuildInfoCard />
-                </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      </SidebarProvider>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+        </SidebarProvider>
+      </div>
     </div>
   );
 };
