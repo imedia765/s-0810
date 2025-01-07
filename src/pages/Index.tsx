@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Folder, File } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import BuildInfoCard from '@/components/BuildInfoCard';
 
 const Index = () => {
   const [code, setCode] = useState('// Your generated code will appear here');
@@ -87,15 +88,20 @@ const Index = () => {
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={30} minSize={20}>
-              <div className="h-full border rounded-lg border-border">
-                <div className="p-4 border-b border-border">
-                  <h2 className="text-sm font-semibold">Project Files</h2>
-                </div>
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <div className="p-2">
-                    {renderFileTree(fileTree)}
+              <div className="h-full flex flex-col">
+                <div className="flex-1 border rounded-lg border-border mb-4">
+                  <div className="p-4 border-b border-border">
+                    <h2 className="text-sm font-semibold">Project Files</h2>
                   </div>
-                </ScrollArea>
+                  <ScrollArea className="h-[calc(50vh-100px)]">
+                    <div className="p-2">
+                      {renderFileTree(fileTree)}
+                    </div>
+                  </ScrollArea>
+                </div>
+                <div className="flex-1 border rounded-lg border-border">
+                  <BuildInfoCard />
+                </div>
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
