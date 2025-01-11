@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { GitBranch, GitCommit, Star, History, Tag, AlertTriangle } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { GitBranch, GitCommit, Star, History, Tag, Trash2, RotateCw, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,10 +33,6 @@ export function RepoManager() {
   });
   const [repoUrl, setRepoUrl] = useState("");
   const [repoLabel, setRepoLabel] = useState("");
-  const [pushType, setPushType] = useState("regular");
-  const [selectedSourceRepo, setSelectedSourceRepo] = useState("");
-  const [selectedTargetRepo, setSelectedTargetRepo] = useState("");
-  const [lastAction, setLastAction] = useState<string>("");
   const [showMasterWarning, setShowMasterWarning] = useState(false);
   const [confirmationStep, setConfirmationStep] = useState(0);
   const { toast } = useToast();
@@ -50,7 +45,6 @@ export function RepoManager() {
     e.preventDefault();
     
     if (!repoUrl) {
-      console.error("Repository URL is required");
       toast({
         title: "Error",
         description: "Please enter a repository URL",
@@ -62,13 +56,11 @@ export function RepoManager() {
     const newRepo: Repository = {
       id: crypto.randomUUID(),
       url: repoUrl,
-      label: repoLabel,
+      label: repoLabel || undefined,
       isMaster: repositories.length === 0,
       lastPushed: new Date().toISOString(),
-      lastCommit: "Initial commit"
     };
 
-    console.log("Adding new repository:", { url: repoUrl, label: repoLabel });
     setRepositories(prev => [...prev, newRepo]);
     setRepoUrl("");
     setRepoLabel("");
@@ -79,252 +71,185 @@ export function RepoManager() {
     });
   };
 
-  const handlePushRepo = () => {
-    if (!selectedSourceRepo || !selectedTargetRepo) {
-      console.error("Source and target repositories must be selected");
-      toast({
-        title: "Error",
-        description: "Please select both source and target repositories",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const targetRepo = repositories.find(r => r.id === selectedTargetRepo);
-    
-    if (targetRepo?.isMaster && confirmationStep === 0) {
-      console.warn("Attempting to push to master repository - requiring confirmation");
+  const handleDeleteRepo = (id: string) => {
+    const repo = repositories.find(r => r.id === id);
+    if (repo?.isMaster) {
       setShowMasterWarning(true);
       return;
     }
+    setRepositories(prev => prev.filter(r => r.id !== id));
+    toast({
+      title: "Success",
+      description: "Repository deleted successfully",
+    });
+  };
 
-    const sourceRepo = repositories.find(r => r.id === selectedSourceRepo);
-    
-    // Simulate push operation with detailed logging
-    console.log(`%cPush Operation Started`, 'color: blue; font-weight: bold');
-    console.log(`From: ${sourceRepo?.label || sourceRepo?.url}`);
-    console.log(`To: ${targetRepo?.label || targetRepo?.url}`);
-    console.log(`Type: ${pushType}`);
-
+  const handleSyncRepo = (id: string) => {
     const timestamp = new Date().toISOString();
     setRepositories(prev => prev.map(repo => {
-      if (repo.id === selectedTargetRepo) {
+      if (repo.id === id) {
         return { ...repo, lastPushed: timestamp };
       }
       return repo;
     }));
-
-    const actionMessage = `Pushed from ${sourceRepo?.label || sourceRepo?.url} to ${targetRepo?.label || targetRepo?.url} at ${new Date().toLocaleTimeString()}`;
-    setLastAction(actionMessage);
-    console.log(`%cPush Operation Completed: ${actionMessage}`, 'color: green');
-    
     toast({
       title: "Success",
-      description: `Push completed with ${pushType} strategy`,
+      description: "Repository synced successfully",
     });
-
-    // Reset confirmation state
-    setConfirmationStep(0);
-    setShowMasterWarning(false);
-  };
-
-  const handleMasterWarningConfirm = () => {
-    setConfirmationStep(prev => prev + 1);
-    if (confirmationStep < 2) {
-      console.warn(`Master push confirmation step ${confirmationStep + 1} of 3`);
-    } else {
-      handlePushRepo();
-    }
-  };
-
-  const toggleMaster = (id: string) => {
-    console.log("Toggling master repository:", id);
-    setRepositories(prev => prev.map(repo => ({
-      ...repo,
-      isMaster: repo.id === id
-    })));
   };
 
   return (
-    <Card className="p-6 space-y-6 bg-secondary/50 backdrop-blur-sm">
-      <div className="flex items-center gap-2 mb-6">
-        <GitBranch className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-semibold">Repository Manager</h2>
-      </div>
-      
-      <form onSubmit={handleAddRepo} className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="repoUrl" className="text-sm font-medium">
-            Repository URL
-          </label>
-          <Input
-            id="repoUrl"
-            placeholder="https://github.com/username/repo.git"
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            className="bg-background/50"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="repoLabel" className="text-sm font-medium">
-            Repository Label (Optional)
-          </label>
-          <Input
-            id="repoLabel"
-            placeholder="e.g., Production, Staging, Feature-X"
-            value={repoLabel}
-            onChange={(e) => setRepoLabel(e.target.value)}
-            className="bg-background/50"
-          />
-        </div>
-
-        <Button type="submit" className="w-full">
-          Add Repository
-        </Button>
-      </form>
-
-      <div className="space-y-4 pt-4 border-t border-border/50">
-        <h3 className="text-lg font-medium">Push Repository</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Source Repository</label>
-            <Select value={selectedSourceRepo} onValueChange={setSelectedSourceRepo}>
-              <SelectTrigger className="bg-background/50">
-                <SelectValue placeholder="Select source repository" />
-              </SelectTrigger>
-              <SelectContent>
-                {repositories.map(repo => (
-                  <SelectItem key={repo.id} value={repo.id}>
-                    {repo.label || repo.url}
-                    {repo.isMaster && <Star className="inline h-4 w-4 ml-2 text-red-500" />}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Target Repository</label>
-            <Select value={selectedTargetRepo} onValueChange={setSelectedTargetRepo}>
-              <SelectTrigger className="bg-background/50">
-                <SelectValue placeholder="Select target repository" />
-              </SelectTrigger>
-              <SelectContent>
-                {repositories.map(repo => (
-                  <SelectItem key={repo.id} value={repo.id}>
-                    {repo.label || repo.url}
-                    {repo.isMaster && <Star className="inline h-4 w-4 ml-2 text-red-500" />}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Push Type</label>
-          <Select value={pushType} onValueChange={setPushType}>
-            <SelectTrigger className="bg-background/50">
-              <SelectValue placeholder="Select push type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="regular">Regular Push</SelectItem>
-              <SelectItem value="force">Force Push</SelectItem>
-              <SelectItem value="force-with-lease">Force with Lease</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button onClick={handlePushRepo} className="w-full">
-          Push Repository
-        </Button>
+    <div className="w-full max-w-4xl mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-violet-400">
+          Git Repository Manager
+        </h1>
+        <p className="text-muted-foreground">
+          Manage and sync your Git repositories in one place
+        </p>
       </div>
 
-      {repositories.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-border/50">
-          <h3 className="text-lg font-medium flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Repository History
-          </h3>
-          <div className="space-y-2">
-            {repositories.map(repo => (
-              <div 
-                key={repo.id} 
-                className={`flex items-center justify-between p-3 rounded-md transition-colors ${
-                  repo.isMaster ? 'bg-red-500/10 border border-red-500/20' : 'bg-background/50'
-                }`}
+      <Card className="p-6 space-y-6">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Add Repository</h2>
+          <form onSubmit={handleAddRepo} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="repoName" className="text-sm font-medium">
+                Repository Name*
+              </label>
+              <Input
+                id="repoName"
+                placeholder="My Awesome Project"
+                value={repoLabel}
+                onChange={(e) => setRepoLabel(e.target.value)}
+                className="bg-background/50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="nickname" className="text-sm font-medium">
+                Nickname (Optional)
+              </label>
+              <Input
+                id="nickname"
+                placeholder="Project Nickname"
+                value={repoLabel}
+                onChange={(e) => setRepoLabel(e.target.value)}
+                className="bg-background/50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="gitUrl" className="text-sm font-medium">
+                Git URL*
+              </label>
+              <Input
+                id="gitUrl"
+                placeholder="https://github.com/username/repo"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                className="bg-background/50"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="master"
+                checked={repositories.length === 0}
+                disabled={repositories.length === 0}
+              />
+              <label
+                htmlFor="master"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                <div className="flex items-center gap-2">
-                  <GitCommit className={`h-4 w-4 ${repo.isMaster ? 'text-red-500' : 'text-muted-foreground'}`} />
-                  <span className="text-sm">{repo.url}</span>
-                  {repo.label && (
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <Tag className="h-3 w-3" />
-                      {repo.label}
-                    </Badge>
-                  )}
-                  {repo.isMaster ? (
-                    <Star className="h-4 w-4 text-red-500" />
-                  ) : (
+                This is a master repository
+              </label>
+            </div>
+
+            <Button type="submit" className="w-full">
+              <GitBranch className="mr-2" />
+              Add Repository
+            </Button>
+          </form>
+        </div>
+
+        {repositories.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Repositories ({repositories.length})</h2>
+            </div>
+            <div className="space-y-3">
+              {repositories.map((repo) => (
+                <div
+                  key={repo.id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-card border"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {repo.label || repo.url.split('/').pop()}
+                      </span>
+                      {repo.isMaster && (
+                        <Badge variant="secondary" className="text-xs">
+                          Master
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground">{repo.url}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Last synced: {repo.lastPushed ? new Date(repo.lastPushed).toLocaleString() : 'Never'}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
-                      size="sm"
-                      onClick={() => toggleMaster(repo.id)}
-                      className="text-xs"
+                      size="icon"
+                      onClick={() => handleDeleteRepo(repo.id)}
+                      className="text-destructive hover:text-destructive/90"
                     >
-                      Set as Master
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleSyncRepo(repo.id)}
+                    >
+                      <RotateCw className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  Last pushed: {repo.lastPushed ? new Date(repo.lastPushed).toLocaleString() : 'Never'}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      {lastAction && (
-        <div className="pt-4 border-t border-border/50">
-          <h3 className="text-lg font-medium mb-2">Last Action</h3>
-          <div className="bg-background/50 p-3 rounded-md">
-            <p className="text-sm text-muted-foreground">{lastAction}</p>
-          </div>
-        </div>
-      )}
+        )}
+      </Card>
 
       <AlertDialog open={showMasterWarning} onOpenChange={setShowMasterWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              Warning: Pushing to Master Repository
+            <AlertDialogTitle>
+              Warning: Modifying Master Repository
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmationStep === 0 && "This is a master repository. Are you sure you want to proceed with the push operation?"}
-              {confirmationStep === 1 && "Please confirm again. This action will modify the master repository."}
-              {confirmationStep === 2 && "Final confirmation required. This action cannot be undone."}
+              Are you sure you want to modify the master repository? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setConfirmationStep(0);
-              setShowMasterWarning(false);
-            }}>
+            <AlertDialogCancel onClick={() => setShowMasterWarning(false)}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleMasterWarningConfirm}
-              className="bg-red-500 hover:bg-red-600"
+              onClick={() => {
+                setShowMasterWarning(false);
+                setConfirmationStep(0);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
             >
-              {confirmationStep === 2 ? "Confirm Push" : "Continue"}
+              Continue
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
 }
