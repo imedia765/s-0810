@@ -100,7 +100,7 @@ export function RepoManager() {
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
-      <div className="text-center space-y-2">
+      <div className="text-center">
         <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
           Git Repository Manager
         </h1>
@@ -120,19 +120,6 @@ export function RepoManager() {
               <Input
                 id="repoName"
                 placeholder="My Awesome Project"
-                value={repoLabel}
-                onChange={(e) => setRepoLabel(e.target.value)}
-                className="bg-background/50 border-muted"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="nickname" className="text-sm font-medium text-muted-foreground">
-                Nickname (Optional)
-              </label>
-              <Input
-                id="nickname"
-                placeholder="Project Nickname"
                 value={repoLabel}
                 onChange={(e) => setRepoLabel(e.target.value)}
                 className="bg-background/50 border-muted"
