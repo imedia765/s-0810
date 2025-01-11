@@ -45,42 +45,6 @@ export type Database = {
         }
         Relationships: []
       }
-      repository_relationships: {
-        Row: {
-          clone_repo_id: string
-          created_at: string | null
-          id: string
-          master_repo_id: string
-        }
-        Insert: {
-          clone_repo_id: string
-          created_at?: string | null
-          id?: string
-          master_repo_id: string
-        }
-        Update: {
-          clone_repo_id?: string
-          created_at?: string | null
-          id?: string
-          master_repo_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "repository_relationships_clone_repo_id_fkey"
-            columns: ["clone_repo_id"]
-            isOneToOne: false
-            referencedRelation: "repositories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "repository_relationships_master_repo_id_fkey"
-            columns: ["master_repo_id"]
-            isOneToOne: false
-            referencedRelation: "repositories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never

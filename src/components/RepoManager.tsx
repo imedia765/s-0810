@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { GitBranch, GitCommit, Star, History, Tag, Trash2, RotateCw, Check } from "lucide-react";
+import { GitBranch, GitCommit, Star, History, Tag, Trash2, RotateCw, Check, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -99,9 +99,9 @@ export function RepoManager() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
+    <div className="w-full max-w-6xl mx-auto space-y-8 p-6">
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-violet-400">
+        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
           Git Repository Manager
         </h1>
         <p className="text-muted-foreground">
@@ -109,12 +109,12 @@ export function RepoManager() {
         </p>
       </div>
 
-      <Card className="p-6 space-y-6">
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="p-6 space-y-6 bg-card/50 backdrop-blur-sm border-muted">
           <h2 className="text-lg font-semibold">Add Repository</h2>
           <form onSubmit={handleAddRepo} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="repoName" className="text-sm font-medium">
+              <label htmlFor="repoName" className="text-sm font-medium text-muted-foreground">
                 Repository Name*
               </label>
               <Input
@@ -122,12 +122,12 @@ export function RepoManager() {
                 placeholder="My Awesome Project"
                 value={repoLabel}
                 onChange={(e) => setRepoLabel(e.target.value)}
-                className="bg-background/50"
+                className="bg-background/50 border-muted"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="nickname" className="text-sm font-medium">
+              <label htmlFor="nickname" className="text-sm font-medium text-muted-foreground">
                 Nickname (Optional)
               </label>
               <Input
@@ -135,12 +135,12 @@ export function RepoManager() {
                 placeholder="Project Nickname"
                 value={repoLabel}
                 onChange={(e) => setRepoLabel(e.target.value)}
-                className="bg-background/50"
+                className="bg-background/50 border-muted"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="gitUrl" className="text-sm font-medium">
+              <label htmlFor="gitUrl" className="text-sm font-medium text-muted-foreground">
                 Git URL*
               </label>
               <Input
@@ -148,7 +148,7 @@ export function RepoManager() {
                 placeholder="https://github.com/username/repo"
                 value={repoUrl}
                 onChange={(e) => setRepoUrl(e.target.value)}
-                className="bg-background/50"
+                className="bg-background/50 border-muted"
               />
             </div>
 
@@ -160,69 +160,81 @@ export function RepoManager() {
               />
               <label
                 htmlFor="master"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 This is a master repository
               </label>
             </div>
 
-            <Button type="submit" className="w-full">
-              <GitBranch className="mr-2" />
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500 hover:from-blue-600 hover:via-violet-600 hover:to-purple-600">
+              <Plus className="mr-2 h-4 w-4" />
               Add Repository
             </Button>
           </form>
-        </div>
+        </Card>
 
-        {repositories.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Repositories ({repositories.length})</h2>
-            </div>
-            <div className="space-y-3">
-              {repositories.map((repo) => (
-                <div
-                  key={repo.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-card border"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {repo.label || repo.url.split('/').pop()}
-                      </span>
-                      {repo.isMaster && (
-                        <Badge variant="secondary" className="text-xs">
-                          Master
-                        </Badge>
-                      )}
+        <div className="space-y-4">
+          {repositories.length > 0 && (
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">
+                  Repositories ({repositories.length})
+                </h2>
+              </div>
+              <div className="space-y-3">
+                {repositories.map((repo) => (
+                  <Card
+                    key={repo.id}
+                    className="p-4 bg-card/50 backdrop-blur-sm border-muted hover:bg-card/60 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-foreground">
+                            {repo.label || repo.url.split('/').pop()}
+                          </span>
+                          {repo.isMaster && (
+                            <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                              Master
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="bg-green-500/20 text-green-300 border-green-500/30">
+                            Synced
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {repo.url}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Last synced: {repo.lastPushed ? new Date(repo.lastPushed).toLocaleString() : 'Never'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteRepo(repo.id)}
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleSyncRepo(repo.id)}
+                          className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/20"
+                        >
+                          <RotateCw className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">{repo.url}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Last synced: {repo.lastPushed ? new Date(repo.lastPushed).toLocaleString() : 'Never'}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteRepo(repo.id)}
-                      className="text-destructive hover:text-destructive/90"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleSyncRepo(repo.id)}
-                    >
-                      <RotateCw className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       <AlertDialog open={showMasterWarning} onOpenChange={setShowMasterWarning}>
         <AlertDialogContent>
